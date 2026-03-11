@@ -595,3 +595,16 @@ tr.clickable:hover td:last-child {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-dim);
 }
+
+/* ─── Mobile ────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .topbar { padding: 0 1rem; }
+  .topbar-logo { padding-right: 0.75rem; margin-right: 0.25rem; }
+  .topbar-nav a { padding: 0 0.5rem; }
+  .content { padding: 1.25rem 1rem; }
+  .stat-row { flex-wrap: wrap; gap: 1rem; }
+  .stat-item { border-right: none; padding-right: 0; margin-right: 0; }
+  .message { max-width: 90%; }
+  .truncate { max-width: 160px; }
+  .log-container { padding: 0.75rem; height: calc(100vh - 120px); }
+}
