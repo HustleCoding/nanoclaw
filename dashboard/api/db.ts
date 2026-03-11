@@ -5,12 +5,20 @@ const DB_PATH = process.env.DB_PATH
   ?? path.resolve(import.meta.dirname, '../../store/messages.db');
 
 let db: Database.Database;
+let dbWrite: Database.Database;
 
 export function getDb(): Database.Database {
   if (!db) {
     db = new Database(DB_PATH, { readonly: true });
   }
   return db;
+}
+
+export function getWriteDb(): Database.Database {
+  if (!dbWrite) {
+    dbWrite = new Database(DB_PATH);
+  }
+  return dbWrite;
 }
 
 // --- Types (mirrored from NanoClaw src/types.ts) ---
@@ -24,6 +32,7 @@ export interface RegisteredGroupRow {
   container_config: string | null;
   requires_trigger: number | null;
   is_main: number | null;
+  model: string | null;
 }
 
 export interface MessageRow {
@@ -211,6 +220,35 @@ export function getUsageDailyTrend(since: string): UsageDailyTrend[] {
       GROUP BY DATE(created_at) ORDER BY date DESC`,
     )
     .all(since) as UsageDailyTrend[];
+}
+
+export interface UsageByModel {
+  model: string;
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  invocations: number;
+}
+
+export function getUsageByModel(since: string): UsageByModel[] {
+  return getDb()
+    .prepare(
+      `SELECT
+        COALESCE(model, 'unknown') AS model,
+        COALESCE(SUM(cost_usd), 0) AS total_cost,
+        COALESCE(SUM(input_tokens), 0) AS total_input_tokens,
+        COALESCE(SUM(output_tokens), 0) AS total_output_tokens,
+        COUNT(*) AS invocations
+      FROM api_usage WHERE created_at >= ?
+      GROUP BY model ORDER BY total_cost DESC`,
+    )
+    .all(since) as UsageByModel[];
+}
+
+export function setGroupModel(folder: string, model: string | null): void {
+  getWriteDb()
+    .prepare(`UPDATE registered_groups SET model = ? WHERE folder = ?`)
+    .run(model, folder);
 }
 
 export function getRecentUsage(limit: number = 20): UsageRow[] {

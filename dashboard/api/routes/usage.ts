@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getUsageSummary,
   getUsageByGroup,
+  getUsageByModel,
   getUsageDailyTrend,
   getRecentUsage,
 } from '../db.js';
@@ -30,6 +31,7 @@ router.get('/', (_req, res) => {
     week: getUsageSummary(weekStart),
     month: getUsageSummary(monthStart),
     byGroup: getUsageByGroup(monthStart),
+    byModel: getUsageByModel(monthStart),
     dailyTrend: getUsageDailyTrend(monthStart),
     recent: getRecentUsage(20),
   });

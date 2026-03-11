@@ -27,6 +27,7 @@ interface ContainerInput {
   isMain: boolean;
   isScheduledTask?: boolean;
   assistantName?: string;
+  model?: string;
 }
 
 interface ContainerOutput {
@@ -418,6 +419,7 @@ async function runQuery(
       env: sdkEnv,
       permissionMode: 'bypassPermissions',
       allowDangerouslySkipPermissions: true,
+      model: containerInput.model,
       settingSources: ['project', 'user'],
       mcpServers: {
         nanoclaw: {

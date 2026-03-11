@@ -331,6 +331,34 @@ h2 {
   background: rgba(248, 113, 113, 0.18);
 }
 
+/* ─── Form Controls ──────────────────────────────────────────────────── */
+.model-select {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.model-select:hover {
+  border-color: var(--accent);
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.stat-sub {
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+  margin-top: 0.125rem;
+}
+
 /* ─── Tables ─────────────────────────────────────────────────────────── */
 .table-wrap {
   width: 100%;

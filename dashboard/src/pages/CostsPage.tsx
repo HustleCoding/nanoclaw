@@ -16,6 +16,14 @@ interface UsageByGroup {
   invocations: number;
 }
 
+interface UsageByModel {
+  model: string;
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  invocations: number;
+}
+
 interface UsageDailyTrend {
   date: string;
   total_cost: number;
@@ -27,6 +35,7 @@ interface UsageData {
   week: UsageSummary;
   month: UsageSummary;
   byGroup: UsageByGroup[];
+  byModel: UsageByModel[];
   dailyTrend: UsageDailyTrend[];
 }
 
@@ -38,6 +47,12 @@ function fmtTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
+}
+
+function shortModel(model: string): string {
+  return model
+    .replace('claude-', '')
+    .replace(/-\d{8}$/, '');
 }
 
 export default function CostsPage() {
@@ -83,6 +98,36 @@ export default function CostsPage() {
           </span>
         </div>
       </div>
+
+      <h3>By Model (30 days)</h3>
+      {data.byModel.length === 0 ? (
+        <p className="empty">No usage data yet.</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Cost</th>
+                <th>Tokens</th>
+                <th>Calls</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.byModel.map((m) => (
+                <tr key={m.model}>
+                  <td className="mono">{shortModel(m.model)}</td>
+                  <td className="mono">{fmt(m.total_cost)}</td>
+                  <td className="mono">
+                    {fmtTokens(m.total_input_tokens + m.total_output_tokens)}
+                  </td>
+                  <td className="mono">{m.invocations}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <h3>By Group (30 days)</h3>
       {data.byGroup.length === 0 ? (

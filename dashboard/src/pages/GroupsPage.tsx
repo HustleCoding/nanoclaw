@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../api-client';
+import { apiFetch, apiPut } from '../api-client';
 
 interface Group {
   jid: string;
@@ -10,7 +10,15 @@ interface Group {
   added_at: string;
   requires_trigger: number | null;
   is_main: number | null;
+  model: string | null;
 }
+
+const MODEL_OPTIONS = [
+  { value: '', label: 'Default' },
+  { value: 'claude-opus-4-6', label: 'Opus 4.6' },
+  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
+];
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -19,6 +27,21 @@ export default function GroupsPage() {
   useEffect(() => {
     apiFetch<Group[]>('/groups').then(setGroups).catch(console.error);
   }, []);
+
+  const handleModelChange = async (folder: string, model: string) => {
+    try {
+      await apiPut(`/groups/${encodeURIComponent(folder)}/model`, {
+        model: model || null,
+      });
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.folder === folder ? { ...g, model: model || null } : g,
+        ),
+      );
+    } catch (err) {
+      console.error('Failed to update model', err);
+    }
+  };
 
   return (
     <div>
@@ -30,22 +53,36 @@ export default function GroupsPage() {
               <th>Name</th>
               <th>JID</th>
               <th>Folder</th>
-              <th>Trigger</th>
+              <th>Model</th>
               <th>Mode</th>
               <th>Added</th>
             </tr>
           </thead>
           <tbody>
             {groups.map((g) => (
-              <tr
-                key={g.jid}
-                className="clickable"
-                onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
-              >
-                <td>{g.name}</td>
+              <tr key={g.jid}>
+                <td
+                  className="clickable"
+                  onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
+                >
+                  {g.name}
+                </td>
                 <td className="mono">{g.jid}</td>
                 <td className="mono">{g.folder}</td>
-                <td className="mono">{g.trigger_pattern}</td>
+                <td>
+                  <select
+                    className="model-select"
+                    value={g.model || ''}
+                    onChange={(e) => handleModelChange(g.folder, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {MODEL_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </td>
                 <td>
                   {g.is_main ? (
                     <span className="badge badge-green">Main</span>
