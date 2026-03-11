@@ -1,1 +1,13 @@
-{}
+{
+  "enabledPlugins": {
+    "nanoclaw-skills@nanoclaw-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "nanoclaw-skills": {
+      "source": {
+        "source": "github",
+        "repo": "qwibitai/nanoclaw-skills"
+      }
+    }
+  }
+}

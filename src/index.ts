@@ -6,6 +6,7 @@ import {
   CREDENTIAL_PROXY_PORT,
   IDLE_TIMEOUT,
   POLL_INTERVAL,
+  STORE_DIR,
   TIMEZONE,
   TRIGGER_PATTERN,
 } from './config.js';
@@ -471,6 +472,10 @@ async function main(): Promise<void> {
   logger.info('Database initialized');
   loadState();
 
+  // Write PID file for dashboard liveness checks
+  const pidFile = path.join(STORE_DIR, 'nanoclaw.pid');
+  fs.writeFileSync(pidFile, process.pid.toString());
+
   // Start credential proxy (containers route API calls through this)
   const proxyServer = await startCredentialProxy(
     CREDENTIAL_PROXY_PORT,
@@ -480,6 +485,7 @@ async function main(): Promise<void> {
   // Graceful shutdown handlers
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');
+    try { fs.unlinkSync(pidFile); } catch { /* already gone */ }
     proxyServer.close();
     await queue.shutdown(10000);
     for (const ch of channels) await ch.disconnect();
