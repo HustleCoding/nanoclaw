@@ -459,28 +459,39 @@ async function runQuery(
       log(`Result #${resultCount}: subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 200)}` : ''}`);
 
       // Extract cost/usage data from SDK result
+      // usage field is NonNullableUsage (BetaUsage) with snake_case keys
+      // modelUsage entries use camelCase (ModelUsage type)
       const resultMsg = message as {
         result?: string;
         total_cost_usd?: number;
-        usage?: { inputTokens?: number; outputTokens?: number };
+        usage?: { input_tokens?: number; output_tokens?: number };
         duration_ms?: number;
         num_turns?: number;
-        modelUsage?: Record<string, { cost?: number }>;
+        modelUsage?: Record<string, { costUSD?: number; inputTokens?: number; outputTokens?: number }>;
       };
 
       let primaryModel: string | undefined;
+      let totalInputTokens = resultMsg.usage?.input_tokens ?? 0;
+      let totalOutputTokens = resultMsg.usage?.output_tokens ?? 0;
       if (resultMsg.modelUsage) {
         let maxCost = -1;
         for (const [model, usage] of Object.entries(resultMsg.modelUsage)) {
-          if (usage.cost != null && usage.cost > maxCost) {
-            maxCost = usage.cost;
+          if (usage.costUSD != null && usage.costUSD > maxCost) {
+            maxCost = usage.costUSD;
             primaryModel = model;
+          }
+        }
+        // Fall back to modelUsage token sums if usage field was empty
+        if (totalInputTokens === 0 && totalOutputTokens === 0) {
+          for (const usage of Object.values(resultMsg.modelUsage)) {
+            totalInputTokens += usage.inputTokens ?? 0;
+            totalOutputTokens += usage.outputTokens ?? 0;
           }
         }
       }
 
       if (resultMsg.total_cost_usd) {
-        log(`Cost: $${resultMsg.total_cost_usd.toFixed(4)}, input=${resultMsg.usage?.inputTokens ?? 0}, output=${resultMsg.usage?.outputTokens ?? 0}, model=${primaryModel ?? 'unknown'}`);
+        log(`Cost: $${resultMsg.total_cost_usd.toFixed(4)}, input=${totalInputTokens}, output=${totalOutputTokens}, model=${primaryModel ?? 'unknown'}`);
       }
 
       writeOutput({
@@ -488,8 +499,8 @@ async function runQuery(
         result: textResult || null,
         newSessionId,
         cost_usd: resultMsg.total_cost_usd,
-        input_tokens: resultMsg.usage?.inputTokens,
-        output_tokens: resultMsg.usage?.outputTokens,
+        input_tokens: totalInputTokens || undefined,
+        output_tokens: totalOutputTokens || undefined,
         duration_ms: resultMsg.duration_ms,
         num_turns: resultMsg.num_turns,
         model: primaryModel,
