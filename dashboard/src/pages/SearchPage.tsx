@@ -28,26 +28,24 @@ export default function SearchPage() {
   return (
     <div>
       <h2>Search Messages</h2>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && doSearch()}
-          placeholder="Search messages..."
-          style={{
-            flex: 1,
-            padding: '0.5rem 0.75rem',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
-            color: 'var(--text)',
-            fontSize: '0.875rem',
-          }}
-          autoFocus
-        />
-        <button onClick={doSearch}>Search</button>
-      </div>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && doSearch()}
+        placeholder="Search messages... (press Enter)"
+        style={{
+          width: '100%',
+          padding: '0.5rem 0.75rem',
+          marginBottom: '1rem',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text)',
+          fontSize: '0.875rem',
+        }}
+        autoFocus
+      />
       <div className="table-wrap">
         <table>
           <thead>
