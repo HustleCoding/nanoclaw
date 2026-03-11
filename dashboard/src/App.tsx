@@ -6,6 +6,7 @@ import GroupsPage from './pages/GroupsPage';
 import MessagesPage from './pages/MessagesPage';
 import TasksPage from './pages/TasksPage';
 import LogsPage from './pages/LogsPage';
+import SearchPage from './pages/SearchPage';
 
 function Login() {
   const [secret, setSecret] = useState('');
@@ -47,6 +48,7 @@ function Layout() {
           <NavLink to="/" end>Status</NavLink>
           <NavLink to="/groups">Groups</NavLink>
           <NavLink to="/tasks">Tasks</NavLink>
+          <NavLink to="/search">Search</NavLink>
           <NavLink to="/logs">Logs</NavLink>
         </nav>
       </header>
@@ -56,6 +58,7 @@ function Layout() {
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/groups/:jid" element={<MessagesPage />} />
           <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </main>

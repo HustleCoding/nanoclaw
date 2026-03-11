@@ -31,6 +31,14 @@ export function getMessages(jid, before, limit = 50) {
       ) ORDER BY timestamp ASC`)
         .all(jid, limit);
 }
+export function searchMessages(query, limit = 50) {
+    return getDb()
+        .prepare(`SELECT m.*, COALESCE(c.name, m.chat_jid) AS chat_name
+       FROM messages m LEFT JOIN chats c ON c.jid = m.chat_jid
+       WHERE m.content LIKE ?
+       ORDER BY m.timestamp DESC LIMIT ?`)
+        .all(`%${query}%`, limit);
+}
 export function getTasks() {
     return getDb()
         .prepare('SELECT * FROM scheduled_tasks ORDER BY created_at DESC')

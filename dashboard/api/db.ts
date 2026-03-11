@@ -103,6 +103,20 @@ export function getMessages(
     .all(jid, limit) as MessageRow[];
 }
 
+export function searchMessages(
+  query: string,
+  limit: number = 50,
+): (MessageRow & { chat_name: string })[] {
+  return getDb()
+    .prepare(
+      `SELECT m.*, COALESCE(c.name, m.chat_jid) AS chat_name
+       FROM messages m LEFT JOIN chats c ON c.jid = m.chat_jid
+       WHERE m.content LIKE ?
+       ORDER BY m.timestamp DESC LIMIT ?`,
+    )
+    .all(`%${query}%`, limit) as (MessageRow & { chat_name: string })[];
+}
+
 export function getTasks(): TaskRow[] {
   return getDb()
     .prepare('SELECT * FROM scheduled_tasks ORDER BY created_at DESC')
