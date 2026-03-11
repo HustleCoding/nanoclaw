@@ -65,6 +65,21 @@ function createSchema(database: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_task_run_logs ON task_run_logs(task_id, run_at);
 
+    CREATE TABLE IF NOT EXISTS api_usage (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_folder TEXT NOT NULL,
+      chat_jid TEXT NOT NULL,
+      cost_usd REAL NOT NULL DEFAULT 0,
+      input_tokens INTEGER NOT NULL DEFAULT 0,
+      output_tokens INTEGER NOT NULL DEFAULT 0,
+      duration_ms INTEGER NOT NULL DEFAULT 0,
+      num_turns INTEGER NOT NULL DEFAULT 0,
+      model TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_api_usage_created ON api_usage(created_at);
+    CREATE INDEX IF NOT EXISTS idx_api_usage_group ON api_usage(group_folder);
+
     CREATE TABLE IF NOT EXISTS router_state (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -494,6 +509,34 @@ export function logTaskRun(log: TaskRunLog): void {
     log.status,
     log.result,
     log.error,
+  );
+}
+
+export function logApiUsage(entry: {
+  group_folder: string;
+  chat_jid: string;
+  cost_usd: number;
+  input_tokens: number;
+  output_tokens: number;
+  duration_ms: number;
+  num_turns: number;
+  model: string | null;
+}): void {
+  db.prepare(
+    `
+    INSERT INTO api_usage (group_folder, chat_jid, cost_usd, input_tokens, output_tokens, duration_ms, num_turns, model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+  ).run(
+    entry.group_folder,
+    entry.chat_jid,
+    entry.cost_usd,
+    entry.input_tokens,
+    entry.output_tokens,
+    entry.duration_ms,
+    entry.num_turns,
+    entry.model,
+    new Date().toISOString(),
   );
 }
 

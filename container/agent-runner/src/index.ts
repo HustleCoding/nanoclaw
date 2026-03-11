@@ -34,6 +34,12 @@ interface ContainerOutput {
   result: string | null;
   newSessionId?: string;
   error?: string;
+  cost_usd?: number;
+  input_tokens?: number;
+  output_tokens?: number;
+  duration_ms?: number;
+  num_turns?: number;
+  model?: string;
 }
 
 interface SessionEntry {
@@ -451,10 +457,42 @@ async function runQuery(
       resultCount++;
       const textResult = 'result' in message ? (message as { result?: string }).result : null;
       log(`Result #${resultCount}: subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 200)}` : ''}`);
+
+      // Extract cost/usage data from SDK result
+      const resultMsg = message as {
+        result?: string;
+        total_cost_usd?: number;
+        usage?: { inputTokens?: number; outputTokens?: number };
+        duration_ms?: number;
+        num_turns?: number;
+        modelUsage?: Record<string, { cost?: number }>;
+      };
+
+      let primaryModel: string | undefined;
+      if (resultMsg.modelUsage) {
+        let maxCost = -1;
+        for (const [model, usage] of Object.entries(resultMsg.modelUsage)) {
+          if (usage.cost != null && usage.cost > maxCost) {
+            maxCost = usage.cost;
+            primaryModel = model;
+          }
+        }
+      }
+
+      if (resultMsg.total_cost_usd) {
+        log(`Cost: $${resultMsg.total_cost_usd.toFixed(4)}, input=${resultMsg.usage?.inputTokens ?? 0}, output=${resultMsg.usage?.outputTokens ?? 0}, model=${primaryModel ?? 'unknown'}`);
+      }
+
       writeOutput({
         status: 'success',
         result: textResult || null,
-        newSessionId
+        newSessionId,
+        cost_usd: resultMsg.total_cost_usd,
+        input_tokens: resultMsg.usage?.inputTokens,
+        output_tokens: resultMsg.usage?.outputTokens,
+        duration_ms: resultMsg.duration_ms,
+        num_turns: resultMsg.num_turns,
+        model: primaryModel,
       });
     }
   }

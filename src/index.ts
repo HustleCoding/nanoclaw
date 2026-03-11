@@ -37,6 +37,7 @@ import {
   getRegisteredGroup,
   getRouterState,
   initDatabase,
+  logApiUsage,
   setRegisteredGroup,
   setRouterState,
   setSession,
@@ -295,12 +296,24 @@ async function runAgent(
     new Set(Object.keys(registeredGroups)),
   );
 
-  // Wrap onOutput to track session ID from streamed results
+  // Wrap onOutput to track session ID and log API usage from streamed results
   const wrappedOnOutput = onOutput
     ? async (output: ContainerOutput) => {
         if (output.newSessionId) {
           sessions[group.folder] = output.newSessionId;
           setSession(group.folder, output.newSessionId);
+        }
+        if (output.cost_usd && output.cost_usd > 0) {
+          logApiUsage({
+            group_folder: group.folder,
+            chat_jid: chatJid,
+            cost_usd: output.cost_usd,
+            input_tokens: output.input_tokens ?? 0,
+            output_tokens: output.output_tokens ?? 0,
+            duration_ms: output.duration_ms ?? 0,
+            num_turns: output.num_turns ?? 0,
+            model: output.model ?? null,
+          });
         }
         await onOutput(output);
       }
@@ -485,7 +498,11 @@ async function main(): Promise<void> {
   // Graceful shutdown handlers
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');
-    try { fs.unlinkSync(pidFile); } catch { /* already gone */ }
+    try {
+      fs.unlinkSync(pidFile);
+    } catch {
+      /* already gone */
+    }
     proxyServer.close();
     await queue.shutdown(10000);
     for (const ch of channels) await ch.disconnect();

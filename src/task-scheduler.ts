@@ -12,6 +12,7 @@ import {
   getAllTasks,
   getDueTasks,
   getTaskById,
+  logApiUsage,
   logTaskRun,
   updateTask,
   updateTaskAfterRun,
@@ -183,6 +184,18 @@ async function runTask(
       (proc, containerName) =>
         deps.onProcess(task.chat_jid, proc, containerName, task.group_folder),
       async (streamedOutput: ContainerOutput) => {
+        if (streamedOutput.cost_usd && streamedOutput.cost_usd > 0) {
+          logApiUsage({
+            group_folder: task.group_folder,
+            chat_jid: task.chat_jid,
+            cost_usd: streamedOutput.cost_usd,
+            input_tokens: streamedOutput.input_tokens ?? 0,
+            output_tokens: streamedOutput.output_tokens ?? 0,
+            duration_ms: streamedOutput.duration_ms ?? 0,
+            num_turns: streamedOutput.num_turns ?? 0,
+            model: streamedOutput.model ?? null,
+          });
+        }
         if (streamedOutput.result) {
           result = streamedOutput.result;
           // Forward result to user (sendMessage handles formatting)

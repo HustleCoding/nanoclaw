@@ -134,3 +134,89 @@ export function getChats(): ChatRow[] {
     .prepare(`SELECT * FROM chats WHERE jid != '__group_sync__' ORDER BY last_message_time DESC`)
     .all() as ChatRow[];
 }
+
+// --- API Usage queries ---
+
+export interface UsageSummary {
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  invocations: number;
+}
+
+export interface UsageByGroup {
+  group_folder: string;
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  invocations: number;
+}
+
+export interface UsageDailyTrend {
+  date: string;
+  total_cost: number;
+  invocations: number;
+}
+
+export interface UsageRow {
+  id: number;
+  group_folder: string;
+  chat_jid: string;
+  cost_usd: number;
+  input_tokens: number;
+  output_tokens: number;
+  duration_ms: number;
+  num_turns: number;
+  model: string | null;
+  created_at: string;
+}
+
+export function getUsageSummary(since: string): UsageSummary {
+  const row = getDb()
+    .prepare(
+      `SELECT
+        COALESCE(SUM(cost_usd), 0) AS total_cost,
+        COALESCE(SUM(input_tokens), 0) AS total_input_tokens,
+        COALESCE(SUM(output_tokens), 0) AS total_output_tokens,
+        COUNT(*) AS invocations
+      FROM api_usage WHERE created_at >= ?`,
+    )
+    .get(since) as UsageSummary;
+  return row;
+}
+
+export function getUsageByGroup(since: string): UsageByGroup[] {
+  return getDb()
+    .prepare(
+      `SELECT
+        group_folder,
+        COALESCE(SUM(cost_usd), 0) AS total_cost,
+        COALESCE(SUM(input_tokens), 0) AS total_input_tokens,
+        COALESCE(SUM(output_tokens), 0) AS total_output_tokens,
+        COUNT(*) AS invocations
+      FROM api_usage WHERE created_at >= ?
+      GROUP BY group_folder ORDER BY total_cost DESC`,
+    )
+    .all(since) as UsageByGroup[];
+}
+
+export function getUsageDailyTrend(since: string): UsageDailyTrend[] {
+  return getDb()
+    .prepare(
+      `SELECT
+        DATE(created_at) AS date,
+        COALESCE(SUM(cost_usd), 0) AS total_cost,
+        COUNT(*) AS invocations
+      FROM api_usage WHERE created_at >= ?
+      GROUP BY DATE(created_at) ORDER BY date DESC`,
+    )
+    .all(since) as UsageDailyTrend[];
+}
+
+export function getRecentUsage(limit: number = 20): UsageRow[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM api_usage ORDER BY created_at DESC LIMIT ?`,
+    )
+    .all(limit) as UsageRow[];
+}
