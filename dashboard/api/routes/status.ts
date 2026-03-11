@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { getChats } from '../db.js';
@@ -51,6 +52,33 @@ router.get('/', (_req, res) => {
     uptime,
     connectedChannels: Array.from(channelSet),
   });
+});
+
+function runSystemctl(action: string): { ok: boolean; message: string } {
+  try {
+    execSync(`systemctl --user ${action} nanoclaw`, {
+      timeout: 10000,
+      env: { ...process.env, XDG_RUNTIME_DIR: `/run/user/${process.getuid()}` },
+    });
+    return { ok: true, message: `Service ${action} successful` };
+  } catch (err: any) {
+    return { ok: false, message: err.stderr?.toString() || err.message };
+  }
+}
+
+router.post('/restart', (_req, res) => {
+  const result = runSystemctl('restart');
+  res.json(result);
+});
+
+router.post('/stop', (_req, res) => {
+  const result = runSystemctl('stop');
+  res.json(result);
+});
+
+router.post('/start', (_req, res) => {
+  const result = runSystemctl('start');
+  res.json(result);
 });
 
 export default router;

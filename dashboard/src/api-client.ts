@@ -35,6 +35,26 @@ export async function apiFetch<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export async function apiPost<T>(path: string): Promise<T> {
+  const token = getToken();
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
 export function sseUrl(path: string): string {
   return `${BASE}${path}`;
 }
