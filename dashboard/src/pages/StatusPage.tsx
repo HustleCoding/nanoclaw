@@ -45,7 +45,6 @@ export default function StatusPage() {
     try {
       const result = await apiPost<{ ok: boolean; message: string }>(`/status/${action}`);
       setActionMessage(result.message);
-      // Wait a moment for the service to change state, then refresh
       setTimeout(fetchStatus, 2000);
     } catch {
       setActionMessage(`Failed to ${action} service`);
@@ -58,66 +57,67 @@ export default function StatusPage() {
 
   return (
     <div>
-      <h2>Agent Status</h2>
-      <div className="status-grid">
-        <div className="card">
-          <div className="card-label">Service</div>
-          <div className={`badge ${status.running ? 'badge-green' : 'badge-red'}`}>
+      <h2>Status</h2>
+
+      {/* Stat strip */}
+      <div className="stat-row">
+        <div className="stat-item">
+          <span className="stat-label">Service</span>
+          <span className={`badge ${status.running ? 'badge-green' : 'badge-red'}`}>
             {status.running ? 'Running' : 'Stopped'}
-          </div>
+          </span>
         </div>
-        <div className="card">
-          <div className="card-label">PID</div>
-          <div className="card-value">{status.pid ?? '-'}</div>
+        <div className="stat-item">
+          <span className="stat-label">PID</span>
+          <span className="stat-value mono">{status.pid ?? '—'}</span>
         </div>
-        <div className="card">
-          <div className="card-label">Uptime</div>
-          <div className="card-value">
-            {status.uptime !== null ? formatUptime(status.uptime) : '-'}
-          </div>
+        <div className="stat-item">
+          <span className="stat-label">Uptime</span>
+          <span className="stat-value">
+            {status.uptime !== null ? formatUptime(status.uptime) : '—'}
+          </span>
         </div>
-        <div className="card">
-          <div className="card-label">Channels</div>
-          <div className="card-value">
+        <div className="stat-item">
+          <span className="stat-label">Channels</span>
+          <span className="stat-value" style={{ fontSize: '0.875rem' }}>
             {status.connectedChannels.length > 0
               ? status.connectedChannels.join(', ')
-              : 'None'}
-          </div>
+              : '—'}
+          </span>
         </div>
       </div>
 
-      <div className="controls">
-        <h3>Service Controls</h3>
-        <div className="control-buttons">
-          {status.running ? (
-            <>
-              <button
-                className="btn btn-warning"
-                onClick={() => handleAction('restart')}
-                disabled={actionPending}
-              >
-                {actionPending ? 'Restarting...' : 'Restart'}
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => handleAction('stop')}
-                disabled={actionPending}
-              >
-                {actionPending ? 'Stopping...' : 'Stop'}
-              </button>
-            </>
-          ) : (
+      {/* Inline controls */}
+      <div className="service-controls">
+        <span className="service-controls-label">Controls</span>
+        {status.running ? (
+          <>
             <button
-              className="btn btn-success"
-              onClick={() => handleAction('start')}
+              className="btn btn-warning"
+              onClick={() => handleAction('restart')}
               disabled={actionPending}
             >
-              {actionPending ? 'Starting...' : 'Start'}
+              {actionPending ? 'Restarting…' : 'Restart'}
             </button>
-          )}
-        </div>
+            <button
+              className="btn btn-danger"
+              onClick={() => handleAction('stop')}
+              disabled={actionPending}
+            >
+              {actionPending ? 'Stopping…' : 'Stop'}
+            </button>
+          </>
+        ) : (
+          <button
+            className="btn btn-success"
+            onClick={() => handleAction('start')}
+            disabled={actionPending}
+          >
+            {actionPending ? 'Starting…' : 'Start'}
+          </button>
+        )}
         {actionMessage && (
-          <div className="action-message">{actionMessage}</div>
+          <span className="action-message">{actionMessage}</span>
         )}
       </div>
     </div>

@@ -24,8 +24,12 @@ export default function MessagesPage() {
 
   const fetchMessages = async (before?: string) => {
     setLoading(true);
-    const params = before ? `?before=${encodeURIComponent(before)}&limit=50` : '?limit=50';
-    const data = await apiFetch<Message[]>(`/messages/${encodeURIComponent(decodedJid)}${params}`);
+    const params = before
+      ? `?before=${encodeURIComponent(before)}&limit=50`
+      : '?limit=50';
+    const data = await apiFetch<Message[]>(
+      `/messages/${encodeURIComponent(decodedJid)}${params}`
+    );
     if (before) {
       setMessages((prev) => [...data, ...prev]);
     } else {
@@ -52,31 +56,39 @@ export default function MessagesPage() {
   return (
     <div>
       <div className="breadcrumb">
-        <Link to="/groups">Groups</Link> / <span className="mono">{decodedJid}</span>
+        <Link to="/groups">Groups</Link>
+        <span className="breadcrumb-sep">/</span>
+        <span className="mono">{decodedJid}</span>
       </div>
+
       <h2>Messages</h2>
 
       {hasMore && (
         <button onClick={loadOlder} disabled={loading} className="load-more">
-          {loading ? 'Loading...' : 'Load earlier messages'}
+          {loading ? 'Loading…' : 'Load earlier'}
         </button>
       )}
 
       <div className="message-list">
-        {messages.map((msg) => (
-          <div
-            key={`${msg.id}-${msg.chat_jid}`}
-            className={`message ${msg.is_from_me || msg.is_bot_message ? 'message-bot' : 'message-user'}`}
-          >
-            <div className="message-header">
-              <span className="message-sender">{msg.sender_name || msg.sender}</span>
-              <span className="message-time">
-                {new Date(msg.timestamp).toLocaleString()}
-              </span>
+        {messages.map((msg) => {
+          const isBot = Boolean(msg.is_from_me || msg.is_bot_message);
+          return (
+            <div
+              key={`${msg.id}-${msg.chat_jid}`}
+              className={`message ${isBot ? 'message-bot' : 'message-user'}`}
+            >
+              <div className="message-header">
+                <span className="message-sender">
+                  {msg.sender_name || msg.sender}
+                </span>
+                <span className="message-time">
+                  {new Date(msg.timestamp).toLocaleString()}
+                </span>
+              </div>
+              <div className="message-content">{msg.content}</div>
             </div>
-            <div className="message-content">{msg.content}</div>
-          </div>
-        ))}
+          );
+        })}
         {messages.length === 0 && !loading && (
           <div className="empty">No messages yet</div>
         )}

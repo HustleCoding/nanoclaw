@@ -22,48 +22,52 @@ export default function GroupsPage() {
 
   return (
     <div>
-      <h2>Registered Groups</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>JID</th>
-            <th>Folder</th>
-            <th>Trigger</th>
-            <th>Main</th>
-            <th>Added</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groups.map((g) => (
-            <tr
-              key={g.jid}
-              className="clickable"
-              onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
-            >
-              <td>{g.name}</td>
-              <td className="mono">{g.jid}</td>
-              <td className="mono">{g.folder}</td>
-              <td>{g.trigger_pattern}</td>
-              <td>
-                {g.is_main ? (
-                  <span className="badge badge-green">Main</span>
-                ) : (
-                  <span className="badge badge-grey">
-                    {g.requires_trigger ? 'Trigger' : 'All'}
-                  </span>
-                )}
-              </td>
-              <td>{new Date(g.added_at).toLocaleDateString()}</td>
-            </tr>
-          ))}
-          {groups.length === 0 && (
+      <h2>Groups</h2>
+      <div className="table-wrap">
+        <table>
+          <thead>
             <tr>
-              <td colSpan={6} className="empty">No groups registered</td>
+              <th>Name</th>
+              <th>JID</th>
+              <th>Folder</th>
+              <th>Trigger</th>
+              <th>Mode</th>
+              <th>Added</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {groups.map((g) => (
+              <tr
+                key={g.jid}
+                className="clickable"
+                onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
+              >
+                <td>{g.name}</td>
+                <td className="mono">{g.jid}</td>
+                <td className="mono">{g.folder}</td>
+                <td className="mono">{g.trigger_pattern}</td>
+                <td>
+                  {g.is_main ? (
+                    <span className="badge badge-green">Main</span>
+                  ) : (
+                    <span className="badge badge-grey">
+                      {g.requires_trigger ? 'Trigger' : 'All'}
+                    </span>
+                  )}
+                </td>
+                <td style={{ color: 'var(--text-muted)' }}>
+                  {new Date(g.added_at).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+            {groups.length === 0 && (
+              <tr>
+                <td colSpan={6} className="empty">No groups registered</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

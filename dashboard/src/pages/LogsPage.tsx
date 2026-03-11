@@ -11,8 +11,6 @@ export default function LogsPage() {
   useEffect(() => {
     const headers = getAuthHeaders();
     const token = headers.Authorization?.replace('Bearer ', '');
-
-    // EventSource doesn't support custom headers, so we use fetch + ReadableStream
     const controller = new AbortController();
 
     async function connect() {
@@ -53,7 +51,7 @@ export default function LogsPage() {
             });
           }
         }
-      } catch (err) {
+      } catch {
         if (!controller.signal.aborted) {
           setConnected(false);
         }
@@ -70,12 +68,12 @@ export default function LogsPage() {
 
   return (
     <div>
-      <h2>
-        Live Logs{' '}
+      <div className="logs-header">
+        <h2 style={{ marginBottom: 0 }}>Logs</h2>
         <span className={`badge ${connected ? 'badge-green' : 'badge-red'}`}>
-          {connected ? 'Connected' : 'Disconnected'}
+          {connected ? 'Live' : 'Disconnected'}
         </span>
-      </h2>
+      </div>
       <pre className="log-container" ref={containerRef}>
         {lines.map((line, i) => (
           <div key={i} className="log-line">{line}</div>

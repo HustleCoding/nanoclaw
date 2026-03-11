@@ -31,7 +31,7 @@ function Login() {
             placeholder="Dashboard secret"
             autoFocus
           />
-          <button type="submit">Login</button>
+          <button type="submit">Continue</button>
         </form>
       </div>
     </div>
@@ -41,13 +41,15 @@ function Login() {
 function Layout() {
   return (
     <div className="layout">
-      <nav className="sidebar">
-        <div className="logo">NanoClaw</div>
-        <NavLink to="/" end>Status</NavLink>
-        <NavLink to="/groups">Groups</NavLink>
-        <NavLink to="/tasks">Tasks</NavLink>
-        <NavLink to="/logs">Logs</NavLink>
-      </nav>
+      <header className="topbar">
+        <span className="topbar-logo">NanoClaw</span>
+        <nav className="topbar-nav">
+          <NavLink to="/" end>Status</NavLink>
+          <NavLink to="/groups">Groups</NavLink>
+          <NavLink to="/tasks">Tasks</NavLink>
+          <NavLink to="/logs">Logs</NavLink>
+        </nav>
+      </header>
       <main className="content">
         <Routes>
           <Route path="/" element={<StatusPage />} />
