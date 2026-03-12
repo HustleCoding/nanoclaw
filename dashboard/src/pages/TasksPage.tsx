@@ -77,22 +77,22 @@ export default function TasksPage() {
                   className="clickable"
                   onClick={() => toggleExpand(t.id)}
                 >
-                  <td className="mono">{t.group_folder}</td>
-                  <td className="truncate">{t.prompt}</td>
-                  <td className="mono">
+                  <td>{t.group_folder}</td>
+                  <td className="truncate" data-label="Prompt">{t.prompt}</td>
+                  <td className="mono" data-label="Schedule">
                     {t.schedule_type}: {t.schedule_value}
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>
+                  <td style={{ color: 'var(--text-muted)' }} data-label="Next run">
                     {t.next_run
                       ? new Date(t.next_run).toLocaleString()
                       : '—'}
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>
+                  <td style={{ color: 'var(--text-muted)' }} data-label="Last run">
                     {t.last_run
                       ? new Date(t.last_run).toLocaleString()
                       : '—'}
                   </td>
-                  <td>{statusBadge(t.status)}</td>
+                  <td data-label="Status">{statusBadge(t.status)}</td>
                 </tr>
 
                 {expanded === t.id && (

@@ -81,9 +81,9 @@ export default function GroupsPage() {
                 >
                   {g.name}
                 </td>
-                <td className="mono">{g.jid}</td>
-                <td className="mono">{g.folder}</td>
-                <td>
+                <td className="mono" data-label="JID">{g.jid}</td>
+                <td className="mono" data-label="Folder">{g.folder}</td>
+                <td data-label="Model">
                   <select
                     className="model-select"
                     value={g.model || ''}
@@ -97,7 +97,7 @@ export default function GroupsPage() {
                     ))}
                   </select>
                 </td>
-                <td>
+                <td data-label="Mode">
                   {g.is_main ? (
                     <span className="badge badge-green">Main</span>
                   ) : (
@@ -106,7 +106,7 @@ export default function GroupsPage() {
                     </span>
                   )}
                 </td>
-                <td>
+                <td data-label="Session">
                   <button
                     className="btn btn-warning"
                     onClick={(e) => { e.stopPropagation(); handleResetSession(g.folder); }}

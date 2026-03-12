@@ -664,13 +664,143 @@ tr.clickable:hover td:last-child {
 
 /* ─── Mobile ────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .topbar { padding: 0 1rem; }
-  .topbar-logo { padding-right: 0.75rem; margin-right: 0.25rem; }
-  .topbar-nav a { padding: 0 0.5rem; }
-  .content { padding: 1.25rem 1rem; }
-  .stat-row { flex-wrap: wrap; gap: 1rem; }
-  .stat-item { border-right: none; padding-right: 0; margin-right: 0; }
-  .message { max-width: 90%; }
-  .truncate { max-width: 160px; }
-  .log-container { padding: 0.75rem; height: calc(100vh - 120px); }
+  /* Nav: horizontal scroll instead of squeezing */
+  .topbar {
+    padding: 0 0.75rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .topbar::-webkit-scrollbar { display: none; }
+  .topbar-logo {
+    padding-right: 0.75rem;
+    margin-right: 0.25rem;
+    flex-shrink: 0;
+  }
+  .topbar-nav {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+  .topbar-nav a {
+    padding: 0 0.625rem;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+  }
+
+  /* Content */
+  .content {
+    padding: 1.25rem 0.875rem;
+  }
+
+  /* Login */
+  .login-box {
+    width: auto;
+    max-width: 320px;
+    margin: 0 1rem;
+  }
+
+  /* Stat rows → 2-column grid */
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+  }
+  .stat-item {
+    border-right: none;
+    padding-right: 0;
+    margin-right: 0;
+    padding: 0.5rem 0;
+  }
+
+  /* Service controls: wrap */
+  .service-controls {
+    flex-wrap: wrap;
+  }
+
+  /* Integrations */
+  .integrations-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* Tables → stacked card layout */
+  .table-wrap table thead { display: none; }
+  .table-wrap table,
+  .table-wrap table tbody,
+  .table-wrap table tr,
+  .table-wrap table td {
+    display: block;
+    width: 100%;
+  }
+  .table-wrap table tr {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .table-wrap table tr:last-child {
+    border-bottom: none;
+  }
+  .table-wrap table td {
+    padding: 0.125rem 0;
+    border-bottom: none;
+    font-size: 0.8125rem;
+  }
+  .table-wrap table td:first-child {
+    font-weight: 600;
+    padding-bottom: 0.125rem;
+  }
+  .table-wrap table td::before {
+    content: attr(data-label);
+    display: inline-block;
+    width: 5rem;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .table-wrap table td:first-child::before {
+    display: none;
+  }
+
+  /* Inner tables (task logs) keep horizontal scroll */
+  .task-logs .table-wrap table thead { display: table-header-group; }
+  .task-logs .table-wrap table,
+  .task-logs .table-wrap table tbody,
+  .task-logs .table-wrap table tr,
+  .task-logs .table-wrap table td {
+    display: revert;
+    width: revert;
+  }
+  .task-logs .table-wrap table td::before {
+    display: none;
+  }
+  .task-logs {
+    overflow-x: auto;
+  }
+
+  /* Truncate wider */
+  .truncate {
+    max-width: none;
+    white-space: normal;
+  }
+
+  /* Messages */
+  .message { max-width: 92%; }
+
+  /* Logs */
+  .log-container {
+    padding: 0.625rem;
+    height: calc(100vh - 120px);
+    font-size: 0.625rem;
+  }
+
+  /* Costs sub-headings */
+  h3 {
+    font-size: 0.8125rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
 }

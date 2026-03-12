@@ -79,9 +79,9 @@ export default function SearchPage() {
                 onClick={() => navigate(`/groups/${encodeURIComponent(r.chat_jid)}`)}
               >
                 <td>{r.chat_name}</td>
-                <td>{r.sender_name}</td>
-                <td className="truncate">{r.content}</td>
-                <td className="mono" style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                <td data-label="Sender">{r.sender_name}</td>
+                <td className="truncate" data-label="Message">{r.content}</td>
+                <td className="mono" data-label="Time" style={{ color: 'var(--text-muted)' }}>
                   {new Date(r.timestamp).toLocaleString()}
                 </td>
               </tr>

@@ -117,11 +117,11 @@ export default function CostsPage() {
               {data.byModel.map((m) => (
                 <tr key={m.model}>
                   <td className="mono">{shortModel(m.model)}</td>
-                  <td className="mono">{fmt(m.total_cost)}</td>
-                  <td className="mono">
+                  <td className="mono" data-label="Cost">{fmt(m.total_cost)}</td>
+                  <td className="mono" data-label="Tokens">
                     {fmtTokens(m.total_input_tokens + m.total_output_tokens)}
                   </td>
-                  <td className="mono">{m.invocations}</td>
+                  <td className="mono" data-label="Calls">{m.invocations}</td>
                 </tr>
               ))}
             </tbody>
@@ -147,11 +147,11 @@ export default function CostsPage() {
               {data.byGroup.map((g) => (
                 <tr key={g.group_folder}>
                   <td>{g.group_folder}</td>
-                  <td className="mono">{fmt(g.total_cost)}</td>
-                  <td className="mono">
+                  <td className="mono" data-label="Cost">{fmt(g.total_cost)}</td>
+                  <td className="mono" data-label="Tokens">
                     {fmtTokens(g.total_input_tokens + g.total_output_tokens)}
                   </td>
-                  <td className="mono">{g.invocations}</td>
+                  <td className="mono" data-label="Calls">{g.invocations}</td>
                 </tr>
               ))}
             </tbody>
@@ -176,8 +176,8 @@ export default function CostsPage() {
               {data.dailyTrend.map((d) => (
                 <tr key={d.date}>
                   <td className="mono">{d.date}</td>
-                  <td className="mono">{fmt(d.total_cost)}</td>
-                  <td className="mono">{d.invocations}</td>
+                  <td className="mono" data-label="Cost">{fmt(d.total_cost)}</td>
+                  <td className="mono" data-label="Calls">{d.invocations}</td>
                 </tr>
               ))}
             </tbody>
