@@ -43,28 +43,18 @@ router.post('/:folder/reset-session', (req, res) => {
     return;
   }
 
-  // Delete session transcript files
+  // Delete entire projects directory (transcripts, session dirs, index)
   const projectsDir = path.join(DATA_DIR, 'sessions', folder, '.claude', 'projects');
-  let filesDeleted = 0;
+  let cleared = false;
   if (fs.existsSync(projectsDir)) {
-    const walkAndDelete = (dir: string) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          walkAndDelete(fullPath);
-        } else if (entry.name.endsWith('.jsonl')) {
-          fs.unlinkSync(fullPath);
-          filesDeleted++;
-        }
-      }
-    };
-    walkAndDelete(projectsDir);
+    fs.rmSync(projectsDir, { recursive: true, force: true });
+    cleared = true;
   }
 
   // Clear session ID from DB
   getWriteDb().prepare('DELETE FROM sessions WHERE group_folder = ?').run(folder);
 
-  res.json({ ok: true, filesDeleted });
+  res.json({ ok: true, cleared });
 });
 
 export default router;
