@@ -51,8 +51,22 @@ router.post('/:folder/reset-session', (req, res) => {
     cleared = true;
   }
 
+  // Also delete sessions-index.json at the .claude level if it exists
+  const sessionsIndex = path.join(DATA_DIR, 'sessions', folder, '.claude', 'sessions-index.json');
+  if (fs.existsSync(sessionsIndex)) {
+    fs.unlinkSync(sessionsIndex);
+  }
+
   // Clear session ID from DB
   getWriteDb().prepare('DELETE FROM sessions WHERE group_folder = ?').run(folder);
+
+  // Restart core service to flush in-memory session cache
+  const { execSync } = await import('child_process');
+  try {
+    execSync('systemctl --user restart nanoclaw', { timeout: 10000 });
+  } catch {
+    // Non-fatal — session is cleared from DB, will be clean on next manual restart
+  }
 
   res.json({ ok: true, cleared });
 });
