@@ -38,7 +38,7 @@ router.get('/:folder/todos', (req, res) => {
   res.json(todos);
 });
 
-router.post('/:folder/reset-session', (req, res) => {
+router.post('/:folder/reset-session', async (req, res) => {
   const { folder } = req.params;
 
   // Validate folder exists in registered_groups

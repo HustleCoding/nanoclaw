@@ -52,7 +52,7 @@ function runSystemctl(action) {
     try {
         execSync(`systemctl --user ${action} nanoclaw`, {
             timeout: 10000,
-            env: { ...process.env, XDG_RUNTIME_DIR: `/run/user/${process.getuid()}` },
+            env: { ...process.env, XDG_RUNTIME_DIR: `/run/user/${process.getuid?.() ?? 1000}` },
         });
         return { ok: true, message: `Service ${action} successful` };
     }

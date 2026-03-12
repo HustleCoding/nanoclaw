@@ -9,6 +9,7 @@ import groupsRoutes from './routes/groups.js';
 import messagesRoutes from './routes/messages.js';
 import tasksRoutes from './routes/tasks.js';
 import logsRoutes from './routes/logs.js';
+import usageRoutes from './routes/usage.js';
 const app = express();
 const PORT = parseInt(process.env.DASHBOARD_PORT || '4000', 10);
 app.use(cors());
@@ -19,6 +20,7 @@ app.use('/api/groups', authMiddleware, groupsRoutes);
 app.use('/api/messages', authMiddleware, messagesRoutes);
 app.use('/api/tasks', authMiddleware, tasksRoutes);
 app.use('/api/logs', authMiddleware, logsRoutes);
+app.use('/api/usage', authMiddleware, usageRoutes);
 // Serve frontend static files in production
 const distPath = path.resolve(import.meta.dirname, '../dist');
 if (fs.existsSync(distPath)) {
