@@ -285,6 +285,44 @@ h2 {
   color: var(--text-muted);
 }
 
+/* ─── Integrations ───────────────────────────────────────────────────── */
+.integrations-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.integrations-section h3 {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.integrations-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.integration-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.integration-detail {
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+}
+
+.badge-dim {
+  background: var(--grey-dim);
+  color: var(--text-dim);
+}
+
 /* ─── Buttons ────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;

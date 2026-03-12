@@ -24,6 +24,55 @@ function detectAuthMode(): { mode: string; label: string } {
   return { mode: 'none', label: 'Not configured' };
 }
 
+interface Integration {
+  id: string;
+  name: string;
+  enabled: boolean;
+  detail?: string;
+}
+
+function detectIntegrations(): Integration[] {
+  const integrations: Integration[] = [];
+  let env = '';
+  try { env = fs.readFileSync(ENV_PATH, 'utf-8'); } catch { /* no .env */ }
+
+  // GitHub
+  const ghMatch = env.match(/^GITHUB_TOKEN\s*=\s*(.+)/m);
+  const ghToken = ghMatch?.[1]?.trim();
+  integrations.push({
+    id: 'github',
+    name: 'GitHub',
+    enabled: !!ghToken,
+    detail: ghToken
+      ? ghToken.startsWith('github_pat_') ? 'Fine-grained PAT' : 'Classic token'
+      : undefined,
+  });
+
+  // OpenAI (Whisper, etc.)
+  integrations.push({
+    id: 'openai',
+    name: 'OpenAI',
+    enabled: /^OPENAI_API_KEY\s*=\s*.+/m.test(env),
+    detail: /^OPENAI_API_KEY\s*=\s*.+/m.test(env) ? 'Whisper / GPT' : undefined,
+  });
+
+  // Slack
+  integrations.push({
+    id: 'slack',
+    name: 'Slack',
+    enabled: /^SLACK_BOT_TOKEN\s*=\s*.+/m.test(env),
+  });
+
+  // Discord
+  integrations.push({
+    id: 'discord',
+    name: 'Discord',
+    enabled: /^DISCORD_BOT_TOKEN\s*=\s*.+/m.test(env),
+  });
+
+  return integrations;
+}
+
 function isProcessRunning(pid: number): boolean {
   try {
     process.kill(pid, 0);
@@ -62,6 +111,7 @@ router.get('/', (_req, res) => {
   }
 
   const auth = detectAuthMode();
+  const integrations = detectIntegrations();
 
   res.json({
     running,
@@ -70,6 +120,7 @@ router.get('/', (_req, res) => {
     connectedChannels: Array.from(channelSet),
     authMode: auth.mode,
     authLabel: auth.label,
+    integrations,
   });
 });
 

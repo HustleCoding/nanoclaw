@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { apiFetch, apiPost } from '../api-client';
 
+interface Integration {
+  id: string;
+  name: string;
+  enabled: boolean;
+  detail?: string;
+}
+
 interface Status {
   running: boolean;
   pid: number | null;
@@ -8,6 +15,7 @@ interface Status {
   connectedChannels: string[];
   authMode: string;
   authLabel: string;
+  integrations: Integration[];
 }
 
 function formatUptime(seconds: number): string {
@@ -92,6 +100,21 @@ export default function StatusPage() {
               ? status.connectedChannels.join(', ')
               : '—'}
           </span>
+        </div>
+      </div>
+
+      {/* Integrations */}
+      <div className="integrations-section">
+        <h3>Integrations</h3>
+        <div className="integrations-grid">
+          {status.integrations.map((i) => (
+            <div key={i.id} className="integration-item">
+              <span className={`badge ${i.enabled ? 'badge-green' : 'badge-dim'}`}>
+                {i.name}
+              </span>
+              {i.detail && <span className="integration-detail">{i.detail}</span>}
+            </div>
+          ))}
         </div>
       </div>
 
