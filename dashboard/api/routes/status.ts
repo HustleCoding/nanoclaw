@@ -9,6 +9,21 @@ const router = Router();
 const STORE_DIR = process.env.STORE_DIR
   ?? path.resolve(import.meta.dirname, '../../../store');
 
+const ENV_PATH = path.resolve(import.meta.dirname, '../../../.env');
+
+function detectAuthMode(): { mode: string; label: string } {
+  try {
+    const env = fs.readFileSync(ENV_PATH, 'utf-8');
+    if (/^CLAUDE_CODE_OAUTH_TOKEN\s*=/m.test(env)) {
+      return { mode: 'oauth', label: 'Max Subscription' };
+    }
+    if (/^ANTHROPIC_API_KEY\s*=/m.test(env)) {
+      return { mode: 'api-key', label: 'API Key' };
+    }
+  } catch { /* no .env */ }
+  return { mode: 'none', label: 'Not configured' };
+}
+
 function isProcessRunning(pid: number): boolean {
   try {
     process.kill(pid, 0);
@@ -46,11 +61,15 @@ router.get('/', (_req, res) => {
     }
   }
 
+  const auth = detectAuthMode();
+
   res.json({
     running,
     pid,
     uptime,
     connectedChannels: Array.from(channelSet),
+    authMode: auth.mode,
+    authLabel: auth.label,
   });
 });
 

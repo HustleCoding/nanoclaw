@@ -6,6 +6,8 @@ interface Status {
   pid: number | null;
   uptime: number | null;
   connectedChannels: string[];
+  authMode: string;
+  authLabel: string;
 }
 
 function formatUptime(seconds: number): string {
@@ -75,6 +77,12 @@ export default function StatusPage() {
           <span className="stat-label">Uptime</span>
           <span className="stat-value">
             {status.uptime !== null ? formatUptime(status.uptime) : '—'}
+          </span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Auth</span>
+          <span className={`badge ${status.authMode === 'oauth' ? 'badge-green' : status.authMode === 'api-key' ? 'badge-yellow' : 'badge-red'}`}>
+            {status.authLabel}
           </span>
         </div>
         <div className="stat-item">
