@@ -80,6 +80,16 @@ function createSchema(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_api_usage_created ON api_usage(created_at);
     CREATE INDEX IF NOT EXISTS idx_api_usage_group ON api_usage(group_folder);
 
+    CREATE TABLE IF NOT EXISTS todos (
+      id TEXT PRIMARY KEY,
+      group_folder TEXT NOT NULL,
+      title TEXT NOT NULL,
+      completed INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_todos_group ON todos(group_folder);
+
     CREATE TABLE IF NOT EXISTS router_state (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -475,6 +485,74 @@ export function deleteTask(id: string): void {
   db.prepare('DELETE FROM scheduled_tasks WHERE id = ?').run(id);
 }
 
+// --- Todo accessors ---
+
+export interface Todo {
+  id: string;
+  group_folder: string;
+  title: string;
+  completed: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function createTodo(todo: {
+  id: string;
+  group_folder: string;
+  title: string;
+}): void {
+  const now = new Date().toISOString();
+  db.prepare(
+    `INSERT INTO todos (id, group_folder, title, completed, created_at, updated_at)
+     VALUES (?, ?, ?, 0, ?, ?)`,
+  ).run(todo.id, todo.group_folder, todo.title, now, now);
+}
+
+export function getTodosByGroup(groupFolder: string): Todo[] {
+  return db
+    .prepare(
+      'SELECT * FROM todos WHERE group_folder = ? ORDER BY created_at DESC',
+    )
+    .all(groupFolder) as Todo[];
+}
+
+export function getTodoById(id: string): Todo | undefined {
+  return db.prepare('SELECT * FROM todos WHERE id = ?').get(id) as
+    | Todo
+    | undefined;
+}
+
+export function updateTodo(
+  id: string,
+  updates: { title?: string; completed?: boolean },
+): void {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+
+  if (updates.title !== undefined) {
+    fields.push('title = ?');
+    values.push(updates.title);
+  }
+  if (updates.completed !== undefined) {
+    fields.push('completed = ?');
+    values.push(updates.completed ? 1 : 0);
+  }
+
+  if (fields.length === 0) return;
+
+  fields.push('updated_at = ?');
+  values.push(new Date().toISOString());
+
+  values.push(id);
+  db.prepare(`UPDATE todos SET ${fields.join(', ')} WHERE id = ?`).run(
+    ...values,
+  );
+}
+
+export function deleteTodo(id: string): void {
+  db.prepare('DELETE FROM todos WHERE id = ?').run(id);
+}
+
 export function getDueTasks(): ScheduledTask[] {
   const now = new Date().toISOString();
   return db
@@ -653,9 +731,10 @@ export function setRegisteredGroup(jid: string, group: RegisteredGroup): void {
 }
 
 export function setGroupModel(folder: string, model: string | null): void {
-  db.prepare(
-    `UPDATE registered_groups SET model = ? WHERE folder = ?`,
-  ).run(model, folder);
+  db.prepare(`UPDATE registered_groups SET model = ? WHERE folder = ?`).run(
+    model,
+    folder,
+  );
 }
 
 export function getAllRegisteredGroups(): Record<string, RegisteredGroup> {

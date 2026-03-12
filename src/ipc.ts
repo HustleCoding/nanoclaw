@@ -5,7 +5,16 @@ import { CronExpressionParser } from 'cron-parser';
 
 import { DATA_DIR, IPC_POLL_INTERVAL, TIMEZONE } from './config.js';
 import { AvailableGroup } from './container-runner.js';
-import { createTask, deleteTask, getTaskById, updateTask } from './db.js';
+import {
+  createTask,
+  createTodo,
+  deleteTask,
+  deleteTodo,
+  getTaskById,
+  getTodoById,
+  updateTask,
+  updateTodo,
+} from './db.js';
 import { isValidGroupFolder } from './group-folder.js';
 import { logger } from './logger.js';
 import { RegisteredGroup } from './types.js';
@@ -171,6 +180,10 @@ export async function processTaskIpc(
     trigger?: string;
     requiresTrigger?: boolean;
     containerConfig?: RegisteredGroup['containerConfig'];
+    // For todos
+    id?: string;
+    title?: string;
+    completed?: boolean;
   },
   sourceGroup: string, // Verified identity from IPC directory
   isMain: boolean, // Verified from directory path
@@ -445,6 +458,80 @@ export async function processTaskIpc(
         logger.warn(
           { data },
           'Invalid register_group request - missing required fields',
+        );
+      }
+      break;
+
+    case 'add_todo':
+      if (data.id && data.title && data.groupFolder) {
+        if (!isMain && data.groupFolder !== sourceGroup) {
+          logger.warn(
+            { sourceGroup, targetGroup: data.groupFolder },
+            'Unauthorized add_todo attempt blocked',
+          );
+          break;
+        }
+        createTodo({
+          id: data.id,
+          group_folder: data.groupFolder,
+          title: data.title,
+        });
+        logger.info(
+          { todoId: data.id, sourceGroup },
+          'Todo created via IPC',
+        );
+      }
+      break;
+
+    case 'update_todo':
+      if (data.id) {
+        const todo = getTodoById(data.id);
+        if (!todo) {
+          logger.warn(
+            { todoId: data.id, sourceGroup },
+            'Todo not found for update',
+          );
+          break;
+        }
+        if (!isMain && todo.group_folder !== sourceGroup) {
+          logger.warn(
+            { todoId: data.id, sourceGroup },
+            'Unauthorized todo update attempt',
+          );
+          break;
+        }
+        updateTodo(data.id, {
+          title: data.title,
+          completed: data.completed,
+        });
+        logger.info(
+          { todoId: data.id, sourceGroup },
+          'Todo updated via IPC',
+        );
+      }
+      break;
+
+    case 'delete_todo':
+      if (data.id) {
+        const todo = getTodoById(data.id);
+        if (!todo) {
+          logger.warn(
+            { todoId: data.id, sourceGroup },
+            'Todo not found for delete',
+          );
+          break;
+        }
+        if (!isMain && todo.group_folder !== sourceGroup) {
+          logger.warn(
+            { todoId: data.id, sourceGroup },
+            'Unauthorized todo delete attempt',
+          );
+          break;
+        }
+        deleteTodo(data.id);
+        logger.info(
+          { todoId: data.id, sourceGroup },
+          'Todo deleted via IPC',
         );
       }
       break;

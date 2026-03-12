@@ -21,6 +21,7 @@ import {
   runContainerAgent,
   writeGroupsSnapshot,
   writeTasksSnapshot,
+  writeTodosSnapshot,
 } from './container-runner.js';
 import {
   cleanupOrphans,
@@ -36,6 +37,7 @@ import {
   getNewMessages,
   getRegisteredGroup,
   getRouterState,
+  getTodosByGroup,
   initDatabase,
   logApiUsage,
   setRegisteredGroup,
@@ -284,6 +286,19 @@ async function runAgent(
       schedule_value: t.schedule_value,
       status: t.status,
       next_run: t.next_run,
+    })),
+  );
+
+  // Update todos snapshot for container to read
+  const todos = getTodosByGroup(group.folder);
+  writeTodosSnapshot(
+    group.folder,
+    todos.map((t) => ({
+      id: t.id,
+      title: t.title,
+      completed: t.completed === 1,
+      created_at: t.created_at,
+      updated_at: t.updated_at,
     })),
   );
 

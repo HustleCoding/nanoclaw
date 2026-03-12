@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { getGroups, setGroupModel, getWriteDb } from '../db.js';
+import { getGroups, getTodos, setGroupModel, getWriteDb } from '../db.js';
 
 const DATA_DIR = process.env.DATA_DIR
   ?? path.resolve(import.meta.dirname, '../../../data');
@@ -30,6 +30,12 @@ router.put('/:folder/model', (req, res) => {
 
   setGroupModel(folder, model || null);
   res.json({ ok: true, model: model || null });
+});
+
+router.get('/:folder/todos', (req, res) => {
+  const { folder } = req.params;
+  const todos = getTodos(folder);
+  res.json(todos);
 });
 
 router.post('/:folder/reset-session', (req, res) => {

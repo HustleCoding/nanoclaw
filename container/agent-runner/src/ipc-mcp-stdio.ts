@@ -333,6 +333,117 @@ Use available_groups.json to find the JID for a group. The folder name must be c
   },
 );
 
+// --- Todo tools ---
+
+server.tool(
+  'add_todo',
+  'Add an item to the todo list. Returns the new todo ID.',
+  {
+    title: z.string().describe('The todo item text'),
+  },
+  async (args) => {
+    const id = `todo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    writeIpcFile(TASKS_DIR, {
+      type: 'add_todo',
+      id,
+      title: args.title,
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      content: [{ type: 'text' as const, text: `Todo ${id} added: "${args.title}"` }],
+    };
+  },
+);
+
+server.tool(
+  'update_todo',
+  'Update an existing todo item (change title or mark as completed/incomplete).',
+  {
+    todo_id: z.string().describe('The todo ID to update'),
+    title: z.string().optional().describe('New title for the todo'),
+    completed: z.boolean().optional().describe('Set to true to mark as done, false to mark as not done'),
+  },
+  async (args) => {
+    const data: Record<string, string | boolean | undefined> = {
+      type: 'update_todo',
+      id: args.todo_id,
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    };
+    if (args.title !== undefined) data.title = args.title;
+    if (args.completed !== undefined) data.completed = args.completed;
+
+    writeIpcFile(TASKS_DIR, data);
+
+    return {
+      content: [{ type: 'text' as const, text: `Todo ${args.todo_id} update requested.` }],
+    };
+  },
+);
+
+server.tool(
+  'delete_todo',
+  'Delete a todo item.',
+  {
+    todo_id: z.string().describe('The todo ID to delete'),
+  },
+  async (args) => {
+    writeIpcFile(TASKS_DIR, {
+      type: 'delete_todo',
+      id: args.todo_id,
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      content: [{ type: 'text' as const, text: `Todo ${args.todo_id} deletion requested.` }],
+    };
+  },
+);
+
+server.tool(
+  'list_todos',
+  'List all todo items for this group.',
+  {},
+  async () => {
+    const todosFile = path.join(IPC_DIR, 'current_todos.json');
+
+    try {
+      if (!fs.existsSync(todosFile)) {
+        return { content: [{ type: 'text' as const, text: 'No todos found.' }] };
+      }
+
+      const todos = JSON.parse(fs.readFileSync(todosFile, 'utf-8')) as Array<{
+        id: string;
+        title: string;
+        completed: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+
+      if (todos.length === 0) {
+        return { content: [{ type: 'text' as const, text: 'No todos found.' }] };
+      }
+
+      const formatted = todos
+        .map(
+          (t) =>
+            `- [${t.completed ? 'x' : ' '}] ${t.title} (id: ${t.id}, created: ${t.created_at})`,
+        )
+        .join('\n');
+
+      return { content: [{ type: 'text' as const, text: `Todos:\n${formatted}` }] };
+    } catch (err) {
+      return {
+        content: [{ type: 'text' as const, text: `Error reading todos: ${err instanceof Error ? err.message : String(err)}` }],
+      };
+    }
+  },
+);
+
 // Start the stdio transport
 const transport = new StdioServerTransport();
 await server.connect(transport);

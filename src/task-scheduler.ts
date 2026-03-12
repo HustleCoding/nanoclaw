@@ -7,11 +7,13 @@ import {
   ContainerOutput,
   runContainerAgent,
   writeTasksSnapshot,
+  writeTodosSnapshot,
 } from './container-runner.js';
 import {
   getAllTasks,
   getDueTasks,
   getTaskById,
+  getTodosByGroup,
   logApiUsage,
   logTaskRun,
   updateTask,
@@ -144,6 +146,19 @@ async function runTask(
       schedule_value: t.schedule_value,
       status: t.status,
       next_run: t.next_run,
+    })),
+  );
+
+  // Update todos snapshot for container to read
+  const todos = getTodosByGroup(task.group_folder);
+  writeTodosSnapshot(
+    task.group_folder,
+    todos.map((t) => ({
+      id: t.id,
+      title: t.title,
+      completed: t.completed === 1,
+      created_at: t.created_at,
+      updated_at: t.updated_at,
     })),
   );
 

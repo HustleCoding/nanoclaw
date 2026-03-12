@@ -675,6 +675,23 @@ export function writeTasksSnapshot(
   fs.writeFileSync(tasksFile, JSON.stringify(filteredTasks, null, 2));
 }
 
+export function writeTodosSnapshot(
+  groupFolder: string,
+  todos: Array<{
+    id: string;
+    title: string;
+    completed: boolean;
+    created_at: string;
+    updated_at: string;
+  }>,
+): void {
+  const groupIpcDir = resolveGroupIpcPath(groupFolder);
+  fs.mkdirSync(groupIpcDir, { recursive: true });
+
+  const todosFile = path.join(groupIpcDir, 'current_todos.json');
+  fs.writeFileSync(todosFile, JSON.stringify(todos, null, 2));
+}
+
 export interface AvailableGroup {
   jid: string;
   name: string;

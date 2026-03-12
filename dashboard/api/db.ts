@@ -251,6 +251,25 @@ export function setGroupModel(folder: string, model: string | null): void {
     .run(model, folder);
 }
 
+// --- Todo queries ---
+
+export interface TodoRow {
+  id: string;
+  group_folder: string;
+  title: string;
+  completed: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getTodos(groupFolder: string): TodoRow[] {
+  return getDb()
+    .prepare(
+      'SELECT * FROM todos WHERE group_folder = ? ORDER BY created_at DESC',
+    )
+    .all(groupFolder) as TodoRow[];
+}
+
 export function getRecentUsage(limit: number = 20): UsageRow[] {
   return getDb()
     .prepare(
