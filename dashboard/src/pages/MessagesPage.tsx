@@ -65,7 +65,7 @@ export default function MessagesPage() {
 
       {hasMore && (
         <button onClick={loadOlder} disabled={loading} className="load-more">
-          {loading ? 'Loading…' : 'Load earlier'}
+          {loading ? 'Loading...' : 'Load earlier'}
         </button>
       )}
 

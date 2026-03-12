@@ -69,7 +69,7 @@ export default function LogsPage() {
   return (
     <div>
       <div className="logs-header">
-        <h2 style={{ marginBottom: 0 }}>Logs</h2>
+        <h2>Logs</h2>
         <span className={`badge ${connected ? 'badge-green' : 'badge-red'}`}>
           {connected ? 'Live' : 'Disconnected'}
         </span>

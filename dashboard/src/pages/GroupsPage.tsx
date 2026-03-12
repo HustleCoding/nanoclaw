@@ -57,10 +57,20 @@ export default function GroupsPage() {
     setResetting(null);
   };
 
+  const modeBadge = (g: Group) =>
+    g.is_main
+      ? <span className="badge badge-accent">Main</span>
+      : <span className="badge badge-grey">{g.requires_trigger ? 'Trigger' : 'All'}</span>;
+
+  const modelLabel = (g: Group) =>
+    MODEL_OPTIONS.find(o => o.value === (g.model || ''))?.label || 'Default';
+
   return (
     <div>
       <h2>Groups</h2>
-      <div className="table-wrap">
+
+      {/* Desktop table */}
+      <div className="table-wrap desktop-table">
         <table>
           <thead>
             <tr>
@@ -76,16 +86,16 @@ export default function GroupsPage() {
             {groups.map((g) => (
               <tr key={g.jid}>
                 <td
-                  className="clickable"
+                  style={{ cursor: 'pointer', fontWeight: 500 }}
                   onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
                 >
                   {g.name}
                 </td>
-                <td className="mono" data-label="JID">{g.jid}</td>
-                <td className="mono" data-label="Folder">{g.folder}</td>
-                <td data-label="Model">
+                <td className="mono">{g.jid}</td>
+                <td className="mono">{g.folder}</td>
+                <td>
                   <select
-                    className="model-select"
+                    className="select"
                     value={g.model || ''}
                     onChange={(e) => handleModelChange(g.folder, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -97,16 +107,8 @@ export default function GroupsPage() {
                     ))}
                   </select>
                 </td>
-                <td data-label="Mode">
-                  {g.is_main ? (
-                    <span className="badge badge-green">Main</span>
-                  ) : (
-                    <span className="badge badge-grey">
-                      {g.requires_trigger ? 'Trigger' : 'All'}
-                    </span>
-                  )}
-                </td>
-                <td data-label="Session">
+                <td>{modeBadge(g)}</td>
+                <td>
                   <button
                     className="btn btn-warning"
                     onClick={(e) => { e.stopPropagation(); handleResetSession(g.folder); }}
@@ -124,6 +126,48 @@ export default function GroupsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="group-cards">
+        {groups.map((g) => (
+          <div
+            key={g.jid}
+            className="group-card"
+            onClick={() => navigate(`/groups/${encodeURIComponent(g.jid)}`)}
+          >
+            <div className="group-card-header">
+              <span className="group-card-name">{g.name}</span>
+              {modeBadge(g)}
+            </div>
+            <div className="group-card-meta">
+              <span className="mono">{g.folder}</span>
+              <span>{modelLabel(g)}</span>
+            </div>
+            <div className="group-card-actions">
+              <select
+                className="select"
+                value={g.model || ''}
+                onChange={(e) => { e.stopPropagation(); handleModelChange(g.folder, e.target.value); }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {MODEL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-warning"
+                onClick={(e) => { e.stopPropagation(); handleResetSession(g.folder); }}
+                disabled={resetting === g.folder}
+              >
+                {resetting === g.folder ? 'Resetting...' : 'Reset'}
+              </button>
+            </div>
+          </div>
+        ))}
+        {groups.length === 0 && <div className="empty">No groups registered</div>}
       </div>
     </div>
   );

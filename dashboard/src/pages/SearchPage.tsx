@@ -11,6 +11,12 @@ interface SearchResult {
   chat_name: string;
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+}
+
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -27,41 +33,25 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h2>Search Messages</h2>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <h2>Search</h2>
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
         <input
+          className="search-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && doSearch()}
           placeholder="Search messages..."
-          style={{
-            flex: 1,
-            padding: '0.5rem 0.75rem',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
-            color: 'var(--text)',
-            fontSize: '0.875rem',
-          }}
           autoFocus
         />
-        <button
-          onClick={doSearch}
-          style={{
-            padding: '0.5rem 1rem',
-            background: 'var(--text)',
-            color: 'var(--bg)',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-          }}
-        >
+        <button className="btn btn-primary" onClick={doSearch} style={{ flexShrink: 0 }}>
           Search
         </button>
       </div>
-      <div className="table-wrap">
+
+      {/* Desktop table */}
+      <div className="table-wrap desktop-table">
         <table>
           <thead>
             <tr>
@@ -78,11 +68,11 @@ export default function SearchPage() {
                 className="clickable"
                 onClick={() => navigate(`/groups/${encodeURIComponent(r.chat_jid)}`)}
               >
-                <td>{r.chat_name}</td>
-                <td data-label="Sender">{r.sender_name}</td>
-                <td className="truncate" data-label="Message">{r.content}</td>
-                <td className="mono" data-label="Time" style={{ color: 'var(--text-muted)' }}>
-                  {new Date(r.timestamp).toLocaleString()}
+                <td style={{ fontWeight: 500 }}>{r.chat_name}</td>
+                <td>{r.sender_name}</td>
+                <td className="truncate">{r.content}</td>
+                <td className="mono" style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  {formatDate(r.timestamp)}
                 </td>
               </tr>
             ))}
@@ -93,6 +83,27 @@ export default function SearchPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="search-result-cards">
+        {results.map((r) => (
+          <div
+            key={r.id}
+            className="search-result-card"
+            onClick={() => navigate(`/groups/${encodeURIComponent(r.chat_jid)}`)}
+          >
+            <div className="search-result-header">
+              <span className="search-result-group">{r.chat_name}</span>
+              <span className="search-result-time">{formatDate(r.timestamp)}</span>
+            </div>
+            <div className="search-result-sender">{r.sender_name}</div>
+            <div className="search-result-content">{r.content}</div>
+          </div>
+        ))}
+        {searched && results.length === 0 && (
+          <div className="empty">No messages found</div>
+        )}
       </div>
     </div>
   );

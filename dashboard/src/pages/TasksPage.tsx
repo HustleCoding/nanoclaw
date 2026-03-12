@@ -28,12 +28,18 @@ interface TaskRunLog {
 
 function statusBadge(status: string) {
   const cls =
-    status === 'active'
-      ? 'badge-green'
-      : status === 'paused'
-      ? 'badge-yellow'
-      : 'badge-grey';
+    status === 'active' ? 'badge-green' :
+    status === 'paused' ? 'badge-yellow' :
+    status === 'success' ? 'badge-green' :
+    status === 'error' ? 'badge-red' :
+    'badge-grey';
   return <span className={`badge ${cls}`}>{status}</span>;
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
 }
 
 export default function TasksPage() {
@@ -58,7 +64,9 @@ export default function TasksPage() {
   return (
     <div>
       <h2>Tasks</h2>
-      <div className="table-wrap">
+
+      {/* Desktop table */}
+      <div className="table-wrap desktop-table">
         <table>
           <thead>
             <tr>
@@ -73,62 +81,54 @@ export default function TasksPage() {
           <tbody>
             {tasks.map((t) => (
               <Fragment key={t.id}>
-                <tr
-                  className="clickable"
-                  onClick={() => toggleExpand(t.id)}
-                >
-                  <td>{t.group_folder}</td>
-                  <td className="truncate" data-label="Prompt">{t.prompt}</td>
-                  <td className="mono" data-label="Schedule">
-                    {t.schedule_type}: {t.schedule_value}
+                <tr className="clickable" onClick={() => toggleExpand(t.id)}>
+                  <td className="mono">{t.group_folder}</td>
+                  <td className="truncate">{t.prompt}</td>
+                  <td className="mono">{t.schedule_type}: {t.schedule_value}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>
+                    {t.next_run ? formatDate(t.next_run) : '—'}
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }} data-label="Next run">
-                    {t.next_run
-                      ? new Date(t.next_run).toLocaleString()
-                      : '—'}
+                  <td style={{ color: 'var(--text-secondary)' }}>
+                    {t.last_run ? formatDate(t.last_run) : '—'}
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }} data-label="Last run">
-                    {t.last_run
-                      ? new Date(t.last_run).toLocaleString()
-                      : '—'}
-                  </td>
-                  <td data-label="Status">{statusBadge(t.status)}</td>
+                  <td>{statusBadge(t.status)}</td>
                 </tr>
-
                 {expanded === t.id && (
-                  <tr key={`${t.id}-logs`}>
+                  <tr>
                     <td colSpan={6} className="task-expand-cell">
                       <div className="task-logs">
                         <div className="task-logs-title">Run history</div>
                         {logs.length === 0 ? (
-                          <p className="empty">No runs yet</p>
+                          <p className="empty" style={{ padding: '1rem 0' }}>No runs yet</p>
                         ) : (
-                          <table className="inner-table">
-                            <thead>
-                              <tr>
-                                <th>Time</th>
-                                <th>Duration</th>
-                                <th>Status</th>
-                                <th>Result</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {logs.map((l) => (
-                                <tr key={l.id}>
-                                  <td style={{ color: 'var(--text-muted)' }}>
-                                    {new Date(l.run_at).toLocaleString()}
-                                  </td>
-                                  <td className="mono">
-                                    {(l.duration_ms / 1000).toFixed(1)}s
-                                  </td>
-                                  <td>{statusBadge(l.status)}</td>
-                                  <td className="truncate">
-                                    {l.error || l.result || '—'}
-                                  </td>
+                          <div className="table-wrap">
+                            <table className="inner-table">
+                              <thead>
+                                <tr>
+                                  <th>Time</th>
+                                  <th>Duration</th>
+                                  <th>Status</th>
+                                  <th>Result</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {logs.map((l) => (
+                                  <tr key={l.id}>
+                                    <td style={{ color: 'var(--text-secondary)' }}>
+                                      {formatDate(l.run_at)}
+                                    </td>
+                                    <td className="mono">
+                                      {(l.duration_ms / 1000).toFixed(1)}s
+                                    </td>
+                                    <td>{statusBadge(l.status)}</td>
+                                    <td className="truncate">
+                                      {l.error || l.result || '—'}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -138,13 +138,46 @@ export default function TasksPage() {
             ))}
             {tasks.length === 0 && (
               <tr>
-                <td colSpan={6} className="empty">
-                  No scheduled tasks
-                </td>
+                <td colSpan={6} className="empty">No scheduled tasks</td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="task-cards">
+        {tasks.map((t) => (
+          <div key={t.id} className="task-card" onClick={() => toggleExpand(t.id)}>
+            <div className="task-card-header">
+              <span className="mono" style={{ fontSize: '0.6875rem' }}>{t.group_folder}</span>
+              {statusBadge(t.status)}
+            </div>
+            <div className="task-card-prompt">{t.prompt}</div>
+            <div className="task-card-meta">
+              <span>{t.schedule_type}: {t.schedule_value}</span>
+              {t.next_run && <span>Next: {formatDate(t.next_run)}</span>}
+              {t.last_run && <span>Last: {formatDate(t.last_run)}</span>}
+            </div>
+            {expanded === t.id && logs.length > 0 && (
+              <div className="task-logs" style={{ marginTop: '0.75rem' }}>
+                <div className="task-logs-title">Run history</div>
+                {logs.map((l) => (
+                  <div key={l.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '0.375rem 0', borderBottom: '1px solid var(--border-subtle)',
+                    fontSize: '0.75rem',
+                  }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{formatDate(l.run_at)}</span>
+                    <span className="mono">{(l.duration_ms / 1000).toFixed(1)}s</span>
+                    {statusBadge(l.status)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+        {tasks.length === 0 && <div className="empty">No scheduled tasks</div>}
       </div>
     </div>
   );

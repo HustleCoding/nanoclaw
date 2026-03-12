@@ -69,58 +69,66 @@ export default function StatusPage() {
     <div>
       <h2>Status</h2>
 
-      {/* Stat strip */}
-      <div className="stat-row">
-        <div className="stat-item">
-          <span className="stat-label">Service</span>
-          <span className={`badge ${status.running ? 'badge-green' : 'badge-red'}`}>
-            {status.running ? 'Running' : 'Stopped'}
-          </span>
+      {/* Hero card */}
+      <div className="status-hero">
+        <span className={`status-dot ${status.running ? 'status-dot-green' : 'status-dot-red'}`} />
+        <div className="status-hero-text">
+          <h3>{status.running ? 'Service Running' : 'Service Stopped'}</h3>
+          <div className="status-hero-meta">
+            {status.pid && <span className="mono">PID {status.pid}</span>}
+            {status.pid && status.uptime !== null && <span> · </span>}
+            {status.uptime !== null && <span>Up {formatUptime(status.uptime)}</span>}
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">PID</span>
-          <span className="stat-value mono">{status.pid ?? '—'}</span>
+      </div>
+
+      {/* Stats grid */}
+      <div className="card-grid card-grid-3" style={{ marginBottom: '1.5rem' }}>
+        <div className="stat-card">
+          <div className="stat-label">Auth</div>
+          <div>
+            <span className={`badge ${
+              status.authMode === 'oauth' ? 'badge-green' :
+              status.authMode === 'api-key' ? 'badge-yellow' : 'badge-red'
+            }`}>
+              {status.authLabel}
+            </span>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Uptime</span>
-          <span className="stat-value">
-            {status.uptime !== null ? formatUptime(status.uptime) : '—'}
-          </span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Auth</span>
-          <span className={`badge ${status.authMode === 'oauth' ? 'badge-green' : status.authMode === 'api-key' ? 'badge-yellow' : 'badge-red'}`}>
-            {status.authLabel}
-          </span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Channels</span>
-          <span className="stat-value" style={{ fontSize: '0.875rem' }}>
+        <div className="stat-card">
+          <div className="stat-label">Channels</div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>
             {status.connectedChannels.length > 0
               ? status.connectedChannels.join(', ')
-              : '—'}
-          </span>
+              : <span style={{ color: 'var(--text-tertiary)' }}>None active</span>
+            }
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Integrations</div>
+          <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+            {status.integrations.filter(i => i.enabled).length} / {status.integrations.length} active
+          </div>
         </div>
       </div>
 
       {/* Integrations */}
-      <div className="integrations-section">
-        <h3>Integrations</h3>
-        <div className="integrations-grid">
-          {status.integrations.map((i) => (
-            <div key={i.id} className="integration-item">
-              <span className={`badge ${i.enabled ? 'badge-green' : 'badge-dim'}`}>
-                {i.name}
-              </span>
-              {i.detail && <span className="integration-detail">{i.detail}</span>}
-            </div>
-          ))}
-        </div>
+      <div className="section-label">Integrations</div>
+      <div className="integrations-row">
+        {status.integrations.map((i) => (
+          <span
+            key={i.id}
+            className={`integration-chip ${i.enabled ? 'active' : 'inactive'}`}
+          >
+            {i.name}
+            {i.detail && <span className="integration-detail">{i.detail}</span>}
+          </span>
+        ))}
       </div>
 
-      {/* Inline controls */}
-      <div className="service-controls">
-        <span className="service-controls-label">Controls</span>
+      {/* Controls */}
+      <div className="section-label">Controls</div>
+      <div className="btn-row">
         {status.running ? (
           <>
             <button
@@ -128,14 +136,14 @@ export default function StatusPage() {
               onClick={() => handleAction('restart')}
               disabled={actionPending}
             >
-              {actionPending ? 'Restarting…' : 'Restart'}
+              {actionPending ? 'Restarting...' : 'Restart'}
             </button>
             <button
               className="btn btn-danger"
               onClick={() => handleAction('stop')}
               disabled={actionPending}
             >
-              {actionPending ? 'Stopping…' : 'Stop'}
+              {actionPending ? 'Stopping...' : 'Stop'}
             </button>
           </>
         ) : (
@@ -144,7 +152,7 @@ export default function StatusPage() {
             onClick={() => handleAction('start')}
             disabled={actionPending}
           >
-            {actionPending ? 'Starting…' : 'Start'}
+            {actionPending ? 'Starting...' : 'Start'}
           </button>
         )}
         {actionMessage && (

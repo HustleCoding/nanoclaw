@@ -9,6 +9,57 @@ import LogsPage from './pages/LogsPage';
 import SearchPage from './pages/SearchPage';
 import CostsPage from './pages/CostsPage';
 
+/* ─── Compact SVG Icons ─────────────────────────────────────────────── */
+const icons = {
+  status: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="10" cy="10" r="7.5" />
+      <path d="M6.5 10.5L9 13L13.5 7.5" />
+    </svg>
+  ),
+  groups: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="7.5" cy="7" r="2.5" />
+      <circle cx="13" cy="7" r="2.5" />
+      <path d="M3 16c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+      <path d="M12 12c2 0 4 1.2 4 3.5" />
+    </svg>
+  ),
+  tasks: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <rect x="3" y="3" width="14" height="14" rx="2" />
+      <path d="M7 7h6M7 10h4M7 13h5" />
+    </svg>
+  ),
+  search: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="9" cy="9" r="5.5" />
+      <path d="M13 13l3.5 3.5" />
+    </svg>
+  ),
+  costs: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <path d="M4 16l3-5 3 3 3-7 3 4" />
+      <path d="M4 16h12" />
+    </svg>
+  ),
+  logs: (
+    <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <path d="M5 5l3 3-3 3" />
+      <path d="M11 11h4" />
+    </svg>
+  ),
+};
+
+const navItems = [
+  { to: '/', label: 'Status', icon: icons.status, end: true },
+  { to: '/groups', label: 'Groups', icon: icons.groups },
+  { to: '/tasks', label: 'Tasks', icon: icons.tasks },
+  { to: '/search', label: 'Search', icon: icons.search },
+  { to: '/costs', label: 'Costs', icon: icons.costs },
+  { to: '/logs', label: 'Logs', icon: icons.logs },
+];
+
 function Login() {
   const [secret, setSecret] = useState('');
 
@@ -23,7 +74,7 @@ function Login() {
   return (
     <div className="login">
       <div className="login-box">
-        <h1>NanoClaw</h1>
+        <h1>Nano<span style={{ color: 'var(--accent)' }}>Claw</span></h1>
         <p>Enter your dashboard secret to continue.</p>
         <form onSubmit={handleSubmit}>
           <input
@@ -44,16 +95,18 @@ function Layout() {
   return (
     <div className="layout">
       <header className="topbar">
-        <span className="topbar-logo">NanoClaw</span>
+        <span className="topbar-logo">
+          Nano<span>Claw</span>
+        </span>
         <nav className="topbar-nav">
-          <NavLink to="/" end>Status</NavLink>
-          <NavLink to="/groups">Groups</NavLink>
-          <NavLink to="/tasks">Tasks</NavLink>
-          <NavLink to="/search">Search</NavLink>
-          <NavLink to="/costs">Costs</NavLink>
-          <NavLink to="/logs">Logs</NavLink>
+          {navItems.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.end}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
       </header>
+
       <main className="content">
         <Routes>
           <Route path="/" element={<StatusPage />} />
@@ -65,6 +118,15 @@ function Layout() {
           <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </main>
+
+      <nav className="bottom-nav">
+        {navItems.map((item) => (
+          <NavLink key={item.to} to={item.to} end={item.end}>
+            {item.icon}
+            <span className="nav-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }
