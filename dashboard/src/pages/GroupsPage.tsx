@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch, apiPut } from '../api-client';
+import { apiFetch, apiPost, apiPut } from '../api-client';
 
 interface Group {
   jid: string;
@@ -22,6 +22,7 @@ const MODEL_OPTIONS = [
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
+  const [resetting, setResetting] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +44,19 @@ export default function GroupsPage() {
     }
   };
 
+  const handleResetSession = async (folder: string) => {
+    if (!confirm(`Reset session for "${folder}"? This clears conversation memory but keeps tasks and settings.`)) {
+      return;
+    }
+    setResetting(folder);
+    try {
+      await apiPost(`/groups/${encodeURIComponent(folder)}/reset-session`);
+    } catch (err) {
+      console.error('Failed to reset session', err);
+    }
+    setResetting(null);
+  };
+
   return (
     <div>
       <h2>Groups</h2>
@@ -55,7 +69,7 @@ export default function GroupsPage() {
               <th>Folder</th>
               <th>Model</th>
               <th>Mode</th>
-              <th>Added</th>
+              <th>Session</th>
             </tr>
           </thead>
           <tbody>
@@ -92,8 +106,14 @@ export default function GroupsPage() {
                     </span>
                   )}
                 </td>
-                <td style={{ color: 'var(--text-muted)' }}>
-                  {new Date(g.added_at).toLocaleDateString()}
+                <td>
+                  <button
+                    className="btn btn-warning"
+                    onClick={(e) => { e.stopPropagation(); handleResetSession(g.folder); }}
+                    disabled={resetting === g.folder}
+                  >
+                    {resetting === g.folder ? 'Resetting...' : 'Reset'}
+                  </button>
                 </td>
               </tr>
             ))}
