@@ -295,16 +295,32 @@ describe('TelegramChannel', () => {
       expect(opts.onMessage).not.toHaveBeenCalled();
     });
 
-    it('skips command messages (starting with /)', async () => {
+    it('skips grammy-handled bot commands (/chatid, /ping)', async () => {
       const opts = createTestOpts();
       const channel = new TelegramChannel('test-token', opts);
       await channel.connect();
 
-      const ctx = createTextCtx({ text: '/start' });
+      for (const cmd of ['/chatid', '/ping']) {
+        vi.clearAllMocks();
+        const ctx = createTextCtx({ text: cmd });
+        await triggerTextMessage(ctx);
+        expect(opts.onMessage).not.toHaveBeenCalled();
+        expect(opts.onChatMetadata).not.toHaveBeenCalled();
+      }
+    });
+
+    it('passes /clear through to message handler (session command)', async () => {
+      const opts = createTestOpts();
+      const channel = new TelegramChannel('test-token', opts);
+      await channel.connect();
+
+      const ctx = createTextCtx({ text: '/clear' });
       await triggerTextMessage(ctx);
 
-      expect(opts.onMessage).not.toHaveBeenCalled();
-      expect(opts.onChatMetadata).not.toHaveBeenCalled();
+      expect(opts.onMessage).toHaveBeenCalledWith(
+        'tg:100200300',
+        expect.objectContaining({ content: '/clear' }),
+      );
     });
 
     it('extracts sender name from first_name', async () => {

@@ -76,8 +76,8 @@ export class TelegramChannel implements Channel {
     });
 
     this.bot.on('message:text', async (ctx) => {
-      // Skip commands
-      if (ctx.message.text.startsWith('/')) return;
+      // Skip bot commands handled by grammy .command() above
+      if (/^\/(chatid|ping)\b/i.test(ctx.message.text)) return;
 
       const chatJid = `tg:${ctx.chat.id}`;
       let content = ctx.message.text;
