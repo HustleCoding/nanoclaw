@@ -476,10 +476,7 @@ export async function processTaskIpc(
           group_folder: data.groupFolder,
           title: data.title,
         });
-        logger.info(
-          { todoId: data.id, sourceGroup },
-          'Todo created via IPC',
-        );
+        logger.info({ todoId: data.id, sourceGroup }, 'Todo created via IPC');
       }
       break;
 
@@ -504,10 +501,7 @@ export async function processTaskIpc(
           title: data.title,
           completed: data.completed,
         });
-        logger.info(
-          { todoId: data.id, sourceGroup },
-          'Todo updated via IPC',
-        );
+        logger.info({ todoId: data.id, sourceGroup }, 'Todo updated via IPC');
       }
       break;
 
@@ -529,10 +523,7 @@ export async function processTaskIpc(
           break;
         }
         deleteTodo(data.id);
-        logger.info(
-          { todoId: data.id, sourceGroup },
-          'Todo deleted via IPC',
-        );
+        logger.info({ todoId: data.id, sourceGroup }, 'Todo deleted via IPC');
       }
       break;
 
