@@ -15,11 +15,25 @@ Check if `dashboard/package.json` exists. If it does, skip to Phase 3 (Configure
 
 ## Phase 2: Apply Code Changes
 
+### Ensure remote
+
+```bash
+git remote -v
+```
+
+Determine which remote points to `qwibitai/nanoclaw.git`. It's usually `origin` for fresh clones or `upstream` for forks. Use that remote name in the commands below (shown as `$REMOTE`).
+
+If no remote points to `qwibitai/nanoclaw.git`, add one:
+
+```bash
+git remote add upstream https://github.com/qwibitai/nanoclaw.git
+```
+
 ### Merge the skill branch
 
 ```bash
-git fetch origin skill/dashboard
-git merge origin/skill/dashboard
+git fetch $REMOTE skill/dashboard
+git merge $REMOTE/skill/dashboard
 ```
 
 If the merge reports conflicts, resolve them by reading the conflicted files and understanding the intent of both sides. The `package-lock.json` conflict is common — resolve with:
