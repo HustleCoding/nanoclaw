@@ -59,7 +59,7 @@ Verify the build succeeds (both `dist/` for frontend and `dist-api/` for API sho
 Generate a random `DASHBOARD_SECRET` for authentication:
 
 ```bash
-SECRET=$(openssl rand -hex 32)
+DASHBOARD_SECRET=$(openssl rand -hex 32)
 ```
 
 ### Update .env
@@ -70,6 +70,8 @@ Add to `.env` (if not already present):
 DASHBOARD_SECRET=<generated-secret>
 DASHBOARD_PORT=4000
 ```
+
+Read back `DASHBOARD_PORT` from `.env` so the verify step uses the correct port.
 
 Use `AskUserQuestion` to confirm the port (default 4000) in case they want a different one.
 
@@ -117,7 +119,7 @@ After=nanoclaw.service
 [Service]
 Type=simple
 WorkingDirectory=%h/<path-to-nanoclaw>
-ExecStart=/usr/bin/node dashboard/dist-api/server.js
+ExecStart=$(which node) dashboard/dist-api/server.js
 Restart=on-failure
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
 
@@ -137,7 +139,7 @@ systemctl --user enable --now nanoclaw-dashboard
 ### Test the status endpoint
 
 ```bash
-curl -s -H "Authorization: Bearer $DASHBOARD_SECRET" http://127.0.0.1:4000/api/status
+curl -s -H "Authorization: Bearer $DASHBOARD_SECRET" http://127.0.0.1:${DASHBOARD_PORT:-4000}/api/status
 ```
 
 Should return JSON with `running`, `pid`, `uptime`, etc.
